@@ -26,6 +26,7 @@ from blockdiag.imagedraw.simplesvg import (a, defs, desc, ellipse, filter, g,
 from blockdiag.imagedraw.utils import memoize
 from blockdiag.imagedraw.utils.ellipse import endpoints as ellipse_endpoints
 from blockdiag.utils import XY, Box, images, is_Pillow_available
+from blockdiag.utils.logging import error, warning
 
 feGaussianBlur = svgclass('feGaussianBlur')
 
@@ -270,10 +271,10 @@ class SVGImageDrawElement(_base.ImageDraw):
 
 
 class SVGImageDraw(SVGImageDrawElement):
-    def __init__(self, filename, **kwargs):
+    def __init__(self, ostream, **kwargs):
         super(SVGImageDraw, self).__init__(None)
 
-        self.filename = filename
+        self.ostream = ostream
         self.options = kwargs
         self.set_canvas_size((0, 0))
 
@@ -298,11 +299,13 @@ class SVGImageDraw(SVGImageDrawElement):
         self.svg.addElement(title('blockdiag'))
         self.svg.addElement(desc(self.options.get('code')))
 
-    def save(self, filename, size, _format):
+    def save(self, ostream, size, _format):
         # Ignore format parameter; compatibility for ImageDrawEx.
 
-        if filename:
-            self.filename = filename
+        warning('ostream: %s' % ostream)
+
+        if ostream:
+            self.ostream = ostream
 
         if size:
             self.svg.attributes['width'] = size[0]
@@ -310,8 +313,9 @@ class SVGImageDraw(SVGImageDrawElement):
 
         image = self.svg.to_xml()
 
-        if self.filename:
-            open(self.filename, 'wb').write(image.encode('utf-8'))
+        if self.ostream:
+            ostream.write(image.encode('utf-8'))
+            ostream.flush()
 
         return image
 

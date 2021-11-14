@@ -13,10 +13,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from sys import stdout
+from os import fdopen
 from collections import defaultdict
 
 from blockdiag import imagedraw, noderenderer
 from blockdiag.metrics import AutoScaler, DiagramMetrics
+from blockdiag.utils.logging import error, warning
 
 
 class DiagramDraw(object):
@@ -36,8 +39,14 @@ class DiagramDraw(object):
             self.scale_ratio = 2
         else:
             self.scale_ratio = 1
+        
+        if filename:
+            self.ostream = open(filename, 'wb')
+        else:
+            # fdopen(stdout.fileno(), 'wb')
+            self.ostream = stdout.buffer
 
-        self.drawer = imagedraw.create(self.format, self.filename,
+        self.drawer = imagedraw.create(self.format, self.ostream,
                                        filters=['linejump'],
                                        scale_ratio=self.scale_ratio,
                                        **kwargs)
@@ -185,4 +194,4 @@ class DiagramDraw(object):
                                  fill=edge.textcolor, outline=self.fill)
 
     def save(self, size=None):
-        return self.drawer.save(self.filename, size, self.format)
+        return self.drawer.save(self.ostream, size, self.format)

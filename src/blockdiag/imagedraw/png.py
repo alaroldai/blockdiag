@@ -113,8 +113,8 @@ def ttfont_for(font):
 
 
 class ImageDrawExBase(base.ImageDraw):
-    def __init__(self, filename, **kwargs):
-        self.filename = filename
+    def __init__(self, ostream, **kwargs):
+        self.ostream = ostream
         self.transparency = kwargs.get('transparency')
         self.bgcolor = kwargs.get('color', (256, 256, 256))
         self._image = None
@@ -395,9 +395,9 @@ class ImageDrawExBase(base.ImageDraw):
         except IOError:
             pass
 
-    def save(self, filename, size, _format):
-        if filename:
-            self.filename = filename
+    def save(self, ostream, size, _format):
+        if ostream:
+            self.ostream = ostream
 
         if size is None:
             x = int(self._image.size[0] / self.scale_ratio)
@@ -406,8 +406,9 @@ class ImageDrawExBase(base.ImageDraw):
 
         self._image.thumbnail(size, Image.ANTIALIAS)
 
-        if self.filename:
-            self._image.save(self.filename, _format)
+        if self.ostream:
+            self._image.save(self.ostream, _format)
+            self.ostream.flush()
             image = None
         else:
             from io import BytesIO
@@ -438,7 +439,7 @@ def blurred(fn):
             return box.shift(-dx, -dy)
 
     def create_shadow(self, size, *args, **kwargs):
-        drawer = ImageDrawExBase(self.filename, transparency=True)
+        drawer = ImageDrawExBase(self.ostream, transparency=True)
         drawer.set_canvas_size(size)
         getattr(drawer, fn.__name__)(*args, **kwargs)
 

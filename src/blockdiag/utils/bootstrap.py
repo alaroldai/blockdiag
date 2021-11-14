@@ -143,6 +143,7 @@ class Options(object):
                      help='Enable debug mode')
         p.add_option('-o', dest='output',
                      help='write diagram to FILE', metavar='FILE')
+        p.add_option('-p', dest='pipe', help='write diagram to stdout', default=False, action='store_true')
         p.add_option('-f', '--font', default=[], action='append',
                      help='use FONT to draw diagram', metavar='FONT')
         p.add_option('--fontmap',
@@ -168,10 +169,14 @@ class Options(object):
             sys.exit(0)
 
         self.options.input = self.args.pop(0)
-        if self.options.output:
-            pass
+        if self.options.pipe:
+            if self.options.output:
+                print('Cannot output to pipe and file at the same time.')
+                sys.exit(0)
         elif self.options.output == '-':
             self.options.output = 'output.' + self.options.type.lower()
+        elif self.options.output:
+            pass
         else:
             basename = os.path.splitext(self.options.input)[0]
             ext = '.%s' % self.options.type.lower()

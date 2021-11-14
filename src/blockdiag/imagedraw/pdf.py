@@ -30,15 +30,15 @@ from blockdiag.utils.fontmap import parse_fontpath
 class PDFImageDraw(base.ImageDraw):
     baseline_text_rendering = True
 
-    def __init__(self, filename, **kwargs):
-        self.filename = filename
+    def __init__(self, ostream, **kwargs):
+        self.ostream = ostream
         self.canvas = None
         self.fonts = {}
 
         self.set_canvas_size(Size(1, 1))  # This line make textsize() workable
 
     def set_canvas_size(self, size):
-        self.canvas = canvas.Canvas(self.filename, pagesize=size)
+        self.canvas = canvas.Canvas(self.ostream, pagesize=size)
         self.size = size
 
     def set_font(self, font):
@@ -227,11 +227,12 @@ class PDFImageDraw(base.ImageDraw):
         except IOError:
             pass
 
-    def save(self, filename, size, _format):
+    def save(self, ostream, size, _format):
         # Ignore size and format parameter; compatibility for ImageDrawEx.
 
         self.canvas.showPage()
         self.canvas.save()
+        ostream.flush()
 
 
 def setup(self):
